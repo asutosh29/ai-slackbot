@@ -11,3 +11,5 @@ wheels/
 .venv
 .ipynb_checkpoints/
 .python_version
+
+.langgraph_api

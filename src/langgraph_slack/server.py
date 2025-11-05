@@ -107,6 +107,7 @@ async def _process_task(task: dict):
             webhook=webhook,
         )
         LOGGER.info(f"LangGraph run: {result}")
+        LOGGER.info(f"Usernames: {USER_NAME_CACHE}")
 
     elif event_type == "callback":
         LOGGER.info(f"Processing LangGraph callback: {event['thread_id']}")
@@ -182,6 +183,10 @@ APP = FastAPI(lifespan=lifespan)
 @APP.post("/events/slack")
 async def slack_endpoint(req: Request):
     return await APP_HANDLER.handle(req)
+
+@APP.get("/hi")
+async def hi(req: Request):
+    return {"messsage":"Hi"}
 
 
 def _get_text(content: str | list[dict]):
@@ -274,6 +279,7 @@ async def _fetch_user_names(user_ids: set[str]) -> dict[str, str]:
     """Fetch and cache Slack display names for user IDs."""
     uncached_ids = [uid for uid in user_ids if uid not in USER_NAME_CACHE]
     if uncached_ids:
+        LOGGER.warning(f"UIDs Not cached: {uncached_ids}")
         tasks = [APP_HANDLER.app.client.users_info(user=uid) for uid in uncached_ids]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         for uid, result in zip(uncached_ids, results):
