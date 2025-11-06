@@ -22,6 +22,31 @@ class State(MessagesState):
     # Extend it with your own keys
     pass
 
+from langchain_community.tools import DuckDuckGoSearchResults
+from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
+
+wrapper = DuckDuckGoSearchAPIWrapper(region="in-en", time="d", max_results=5)
+brave_search_tool = DuckDuckGoSearchResults(api_wrapper=wrapper,output_format="list")
+
+def web_search_tool(query: str):
+    """
+    Search tool allows to search the web with the following tool
+    
+    Args:
+        query (str): string to search on the web
+    
+    Returns:
+        str: Search query responses
+    """
+    results = brave_search_tool.invoke(query)
+    return f"""
+Following are the search results for query: {query}
+
+Results:
+{results}
+"""
+    
+
 # Tools
 def search_tool(query: str):
     """
@@ -37,14 +62,17 @@ def search_tool(query: str):
 1. amx is the author of this application
 2. President of amx land is amx himself
 """
+
+print(web_search_tool("Elon musk"))
 # Add more tools here
-tools = [search_tool]
+tools = [web_search_tool]
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 model = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
 model_with_tool = model.bind_tools(tools)
 
 from langchain.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_community.tools import BraveSearch
 # Nodes
 
 SYSTEM_PROMPT="""
@@ -119,3 +147,4 @@ workflow.add_conditional_edges("agent",tools_condition) # prebuilt tool router f
 workflow.add_edge("tools","agent")
 
 graph = workflow.compile()
+
