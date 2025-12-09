@@ -13,8 +13,26 @@ def show_json(input: dict, indent=4):
  
 def show_dict(input: dict, indent=4):
     print(json.dumps(input,indent=indent))
-    
 
+from .linkwarden_api import LinkwardenClient
+
+ACCESS_TOKEN = os.getenv("LINKWARDEN_ACCESS_TOKEN")
+API_BASE_URL = os.getenv("API_BASE_URL")
+
+client = LinkwardenClient(base_url=API_BASE_URL , api_token=ACCESS_TOKEN )
+
+def unpack_tool(client: LinkwardenClient):
+    
+    tools = []
+    for method_name in dir(client):
+        if callable(getattr(client, method_name)) and not method_name.startswith("__"):
+            method = getattr(client, method_name)
+            if method_name == "_request":
+                continue
+            tools.append(method)
+    return tools
+
+linkwarden_tools = unpack_tool(client=client)
 
 # State
 from langgraph.graph import MessagesState
@@ -65,10 +83,10 @@ def search_tool(query: str):
 
 print(web_search_tool("Elon musk"))
 # Add more tools here
-tools = [web_search_tool]
+tools = [web_search_tool]+linkwarden_tools
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+model = ChatGoogleGenerativeAI(model="gemini-2.5-pro")
 model_with_tool = model.bind_tools(tools)
 
 from langchain.messages import AIMessage, HumanMessage, SystemMessage

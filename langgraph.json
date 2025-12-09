@@ -2,9 +2,9 @@
   "$schema": "https://raw.githubusercontent.com/langchain-ai/langgraph/refs/heads/main/libs/cli/schemas/schema.json",
   "dependencies": ["."],
   "graphs": {
-    "graph": "./src/graphs/agent.py:graph"
+    "graph": "src.graphs.agent:graph"
   },
   "http": {
-    "app": "./src/langgraph_slack/server.py:APP"
+    "app": "src.langgraph_slack.server:APP"
   }
 }
